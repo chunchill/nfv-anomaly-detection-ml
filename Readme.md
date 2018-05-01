@@ -1,52 +1,52 @@
-# 数据收集过程
-1. 进入跳板机
+# The process for building the dataset
+1. Login on the Jump Server
 ```
 sshpass -p 123456 ssh -p 9000 root@100.64.249.217
 ```
-2. 运行clearwater工作负载
+2. Run clearwater Workload
 ```
-# 跳板机中
-## 查看clearwater pods情况
+# In the Jump Server
+## check the clearwater pods status
 kubectl get pods
 
-## 删除clearwater pods情况
+## delete clearwater pods
 kubectl delete -f cw
 
-## 部署clearwater pods
+## deploy clearwater pods
 kubectl apply -f cw
 
-# 创建clearwater用户
-## 进入node24
+# create clearwater users
+## Enter into node24
 ./connect.sh 24
 
-## 进入clearwater-cassandra容器
+## Enter into the container clearwater-cassandra
 docker exec -it $(docker ps |grep clearwater-cassandra |awk {'print $1'}) bash
 
-## 生成用户（例：20000）
+## Bulk Create users（e.g.：20000 users）
 /usr/share/clearwater/crest-prov/src/metaswitch/crest/tools/stress_provision.sh 20000
 
-# 压测
-## 进入node32
+# stress testing
+## enter into node32
 ./connect.sh 32
 
-## 进入clearwater-sprout容器
+## enter into the clearwater-sprout container
 docker exec -it $(docker ps |grep clearwater-sprout |awk {'print $1'} | head -1) bash
 
-## 安装压测工具
+## install the stress tools
 apt-get update
 apt-get install clearwater-sip-stress-coreonly -y
 
-## 开始压测（例：20000用户，100分钟，clearwater-sprout容器ip:10.42.56.48）
+## start the stress test（20000 users，100 mins，clearwater-sprout container ip:10.42.56.48）
 /usr/share/clearwater/bin/run_stress default.svc.cluster.local \
             20000 100  --initial-reg-rate 100 \
             --icscf-target 10.42.56.48:5052 \
             --scscf-target 10.42.56.48:5054
 ```
-3. 随机注入故障
+3. randomly inject bottlenecks
 ```
-# 注入时间100min
+# for 100min
 ./stress.py 100
 ```
-4. 收集数据
+4. collecting data
 http://100.64.249.217:12002/swagger-ui.html
-5. 清洗数据
+5. clean the dataset
